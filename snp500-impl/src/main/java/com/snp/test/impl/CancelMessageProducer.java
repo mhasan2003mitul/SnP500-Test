@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(staticName = "of")
-public class CancelMessageProducer implements SendMessageProvider {
+class CancelMessageProducer implements SendMessageProvider {
   private int batchId;
   private BlockingQueue<ControlMessage> controlMessageChannel;
 

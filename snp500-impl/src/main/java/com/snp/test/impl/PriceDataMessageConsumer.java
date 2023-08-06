@@ -15,7 +15,7 @@ import lombok.Setter;
 @RequiredArgsConstructor(staticName = "of")
 @Setter
 @Getter
-public class PriceDataMessageConsumer implements ReceiveMessageProvider {
+class PriceDataMessageConsumer implements ReceiveMessageProvider {
   @NonNull
   final private int batchId;
   @NonNull

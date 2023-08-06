@@ -7,7 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(staticName = "of")
-public class CompleteMessageProducer implements SendMessageProvider {
+class CompleteMessageProducer implements SendMessageProvider {
   @NonNull
   private int batchId;
   @NonNull

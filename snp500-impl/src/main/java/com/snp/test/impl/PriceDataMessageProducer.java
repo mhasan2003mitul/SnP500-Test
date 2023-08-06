@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 @AllArgsConstructor(staticName = "of")
-public class PriceDataMessageProducer implements SendMessageProvider {
+class PriceDataMessageProducer implements SendMessageProvider {
 
   @NonNull
   private int batchId;

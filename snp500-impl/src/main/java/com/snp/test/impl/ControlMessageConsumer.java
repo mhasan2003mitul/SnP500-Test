@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor(staticName = "of")
-public class ControlMessageConsumer implements ReceiveMessageProvider {
+class ControlMessageConsumer implements ReceiveMessageProvider {
 
   private BlockingQueue<ControlMessage> controlMessageChannel;
 

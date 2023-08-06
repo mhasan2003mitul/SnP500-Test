@@ -5,7 +5,6 @@ import com.snp.test.api.IPriceService;
 import com.snp.test.api.PriceData;
 import com.snp.test.api.PriceDataMessage;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -22,37 +21,40 @@ public class PriceService implements IPriceService {
   private final Map<String, String> consumerConsumeToProducer = new ConcurrentHashMap<>();
   private String priceServiceName;
 
-  final private Map<String, Integer> instrumentLastPrice = new ConcurrentHashMap<>();
-
+  @Override
   public void startPriceService(String priceServiceName) {
       this.priceServiceName = priceServiceName;
   }
 
+  @Override
   public void registerPriceServiceProducer(String producerName) {
     controlMessageChannels.putIfAbsent(producerName, new LinkedBlockingQueue<>());
     priceDataMessageChannels.putIfAbsent(producerName, new ConcurrentHashMap<>());
   }
 
+  @Override
   public void registerPriceServiceConsumer(String producerName, String consumerName) {
     consumerConsumeToProducer.put(consumerName, producerName);
   }
 
-  public void producePriceData(String producerName, int batchId, int chunkSize, PriceData[] priceData) {
+  @Override
+  public void producePriceData(String producerName, int batchId, int chunkSize, List<PriceData> priceDataList) {
     final BlockingQueue<ControlMessage> controlMessageChannel = controlMessageChannels.get(producerName);
     final AbstractMap<Integer, BlockingQueue<PriceDataMessage>> priceDataMessageChannel = priceDataMessageChannels.get(producerName);
 
     executorService.submit(()->{
       // Send Start Batch Message
-      StartMessageProducer.of(batchId, priceData.length, controlMessageChannel).send();
+      StartMessageProducer.of(batchId, priceDataList.size(), controlMessageChannel).send();
       executorService.submit(()->{
         // Send Price Data Message
-        PriceDataMessageProducer.of(batchId, chunkSize, Arrays.asList(priceData), priceDataMessageChannel).send();
+        PriceDataMessageProducer.of(batchId, chunkSize, priceDataList, priceDataMessageChannel).send();
         // Send Batch Complete Message
-        CompleteMessageProducer.of(batchId, priceData.length, controlMessageChannel).send();
+        CompleteMessageProducer.of(batchId, priceDataList.size(), controlMessageChannel).send();
       });
     });
   }
 
+  @Override
   public void consumePriceData(String consumerName) {
     final String producerName = consumerConsumeToProducer.get(consumerName);
     final BlockingQueue<ControlMessage> controlMessageChannel = controlMessageChannels.get(producerName);
@@ -78,7 +80,7 @@ public class PriceService implements IPriceService {
             break;
           case CANCEL_BATCH_COMMAND:
           case COMPLETE_BATCH_COMMAND:
-            System.out.println("Price List: " + priceDataConsumerMap.get(consumerName).getInstrumentLastPrice());
+            System.out.println(String.format("Price List for : %s %s", producerName,  priceDataConsumerMap.get(consumerName).getInstrumentLastPrice().toString()));
             priceDataConsumerMap.get(consumerName).setStopped(Boolean.TRUE);
             break;
           default:
@@ -88,6 +90,7 @@ public class PriceService implements IPriceService {
     });
   }
 
+  @Override
   public void stopProducingPriceData(String producerName, int batchId) {
     final BlockingQueue<ControlMessage> controlMessageChannel = controlMessageChannels.get(producerName);
     executorService.submit(()->{
@@ -98,5 +101,11 @@ public class PriceService implements IPriceService {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Override
+  public void shutdown() {
+    executorService.shutdown();
+    System.out.println(String.format("Shutdown %s price service.", priceServiceName));
   }
 }
