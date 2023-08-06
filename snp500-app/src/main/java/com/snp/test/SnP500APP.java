@@ -1,25 +1,11 @@
 package com.snp.test;
 
-import com.snp.test.api.PriceDataMessage;
-import com.snp.test.api.ControlMessage;
 import com.snp.test.api.PriceData;
-import com.snp.test.impl.PriceDataMessageConsumer;
 import com.snp.test.impl.PriceService;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class SnP500APP {
   public static void main(String[] args) {
-    final Map<Integer, PriceDataMessageConsumer> activeConsumer = new ConcurrentHashMap<>();
-    final Map<String, Integer> instrumentLastPrice = new HashMap<>();
     final Random random = new Random(100);
     final PriceData priceData1[] = new PriceData[10];
     priceData1[0] = new PriceData("A", System.currentTimeMillis(), random.nextInt(100));
@@ -45,10 +31,10 @@ public class SnP500APP {
     priceData2[8] = new PriceData("Q", System.currentTimeMillis() + 1, random.nextInt(100));
     priceData2[9] = new PriceData("R", System.currentTimeMillis() + 1, random.nextInt(100));
 
-    Runtime.getRuntime().addShutdownHook(new Thread(()-> {
-      executorService.shutdown();
-      System.out.println("Close Application.");
-    }));
+//    Runtime.getRuntime().addShutdownHook(new Thread(()-> {
+//      executorService.shutdown();
+//      System.out.println("Close Application.");
+//    }));
 
     PriceService priceService = new PriceService();
     priceService.startPriceService("SnP");

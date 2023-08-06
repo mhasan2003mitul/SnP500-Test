@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>snp500-imp</artifactId>
+  <artifactId>snp500-impl</artifactId>
   <packaging>jar</packaging>
 
   <properties>

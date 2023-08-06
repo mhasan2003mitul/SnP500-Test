@@ -59,32 +59,30 @@ public class PriceService implements IPriceService {
     final AbstractMap<Integer, BlockingQueue<PriceDataMessage>> priceDataMessageChannel = priceDataMessageChannels.get(producerName);
 
     executorService.submit(()->{
-      while(true) {
-        // Read producer control message
-        ControlMessageConsumer controlMessageConsumer = ControlMessageConsumer.of(controlMessageChannel);
+      // Read producer control message
+      ControlMessageConsumer controlMessageConsumer = ControlMessageConsumer.of(controlMessageChannel);
 
-        while(true) {
-          // Read control message from control channel
-          ControlMessage controlMessage = controlMessageConsumer.receive(ControlMessage.class);
-          System.out.println("" + controlMessage);
-          switch (controlMessage.getCommandType()) {
-            case START_BATCH_COMMAND:
-              // Start reading price data from the price data channel
-              executorService.submit(()->{
-                PriceDataMessageConsumer priceDataConsumer = PriceDataMessageConsumer.of(controlMessage.getBatchId(), false, priceDataMessageChannel);
-                priceDataConsumerMap.put(consumerName, priceDataConsumer);
-                // Receive Price Data
-                priceDataConsumer.receive(List.class);
-              });
-              break;
-            case CANCEL_BATCH_COMMAND:
-            case COMPLETE_BATCH_COMMAND:
-              System.out.println("Price List: " + priceDataConsumerMap.get(consumerName).getInstrumentLastPrice());
-              priceDataConsumerMap.get(consumerName).setStopped(Boolean.TRUE);
-              break;
-            default:
-              System.out.println("Not a valid command");
-          }
+      while(true) {
+        // Read control message from control channel
+        ControlMessage controlMessage = controlMessageConsumer.receive(ControlMessage.class);
+        System.out.println("" + controlMessage);
+        switch (controlMessage.getCommandType()) {
+          case START_BATCH_COMMAND:
+            // Start reading price data from the price data channel
+            executorService.submit(()->{
+              PriceDataMessageConsumer priceDataConsumer = PriceDataMessageConsumer.of(controlMessage.getBatchId(), false, priceDataMessageChannel);
+              priceDataConsumerMap.put(consumerName, priceDataConsumer);
+              // Receive Price Data
+              priceDataConsumer.receive(List.class);
+            });
+            break;
+          case CANCEL_BATCH_COMMAND:
+          case COMPLETE_BATCH_COMMAND:
+            System.out.println("Price List: " + priceDataConsumerMap.get(consumerName).getInstrumentLastPrice());
+            priceDataConsumerMap.get(consumerName).setStopped(Boolean.TRUE);
+            break;
+          default:
+            System.out.println("Not a valid command");
         }
       }
     });

@@ -21,7 +21,7 @@
 
   <modules>
     <module>snp500-api</module>
-    <module>snp500-imp</module>
+    <module>snp500-impl</module>
     <module>snp500-app</module>
   </modules>
   <dependencies>

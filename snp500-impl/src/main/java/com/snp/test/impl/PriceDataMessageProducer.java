@@ -1,7 +1,7 @@
 package com.snp.test.impl;
 
-import com.snp.test.api.PriceDataMessage;
 import com.snp.test.api.PriceData;
+import com.snp.test.api.PriceDataMessage;
 import com.snp.test.api.SendMessageProvider;
 import java.util.AbstractMap;
 import java.util.ArrayList;
