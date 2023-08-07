@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.snp.test.api.PriceData;
 import com.snp.test.api.PriceDataMessage;
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,8 +20,10 @@ class PriceDataMessageConsumerTest {
   @Test
   void receive() throws InterruptedException {
 
+    final List<PriceData> priceDataList = TestDataUtil.getPriceData();
+
     AbstractMap<Integer, BlockingQueue<PriceDataMessage>> priceDataMessageChannel = new ConcurrentHashMap<>();
-    PriceDataMessageProducer priceDataMessageProducer = PriceDataMessageProducer.of(TestDataUtil.BATCH_ID, TestDataUtil.CHUNK_SIZE, TestDataUtil.getPriceData(), priceDataMessageChannel);
+    PriceDataMessageProducer priceDataMessageProducer = PriceDataMessageProducer.of(TestDataUtil.BATCH_ID, TestDataUtil.CHUNK_SIZE, priceDataList, priceDataMessageChannel);
     assertEquals(Boolean.TRUE, priceDataMessageProducer.send());
 
     Map<String, Integer> instrumentPrice = new ConcurrentHashMap<>();
@@ -47,6 +50,6 @@ class PriceDataMessageConsumerTest {
     latch.await();
     assertNotNull(instrumentPrice);
     assertEquals(TestDataUtil.getPriceData().size(), instrumentPrice.size());
-    assertEquals(TestDataUtil.getPriceData().stream().collect(Collectors.toMap(PriceData::getId, PriceData::getPrice)), instrumentPrice);
+    assertEquals(priceDataList.stream().collect(Collectors.toMap(PriceData::getId, PriceData::getPrice)), instrumentPrice);
   }
 }

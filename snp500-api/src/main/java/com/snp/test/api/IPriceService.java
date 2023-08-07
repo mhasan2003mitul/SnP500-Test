@@ -6,10 +6,10 @@ public interface IPriceService {
 
   void startPriceService(String priceServiceName);
   void registerPriceServiceProducer(String producerName);
-  void registerPriceServiceConsumer(String producerName, String consumerName);
-  void producePriceData(String producerName, int batchId, int chunkSize, List<PriceData> priceDataList);
-  void consumePriceData(String consumerName);
-  void stopProducingPriceData(String producerName, int batchId);
+  void registerPriceServiceConsumerForAProducer(String producerName, String consumerName);
+  void producePriceDataForAConsumer(String producerName, String consumerName, int batchId, int chunkSize, List<PriceData> priceDataList);
+  void consumePriceDataFromAProducer(String consumerName, String producerName);
+  void stopProducingPriceDataForAConsumer(String producerName, String consumerName, int batchId);
   void shutdown();
 
 }
