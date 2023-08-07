@@ -15,10 +15,10 @@ class StartMessageProducer implements SendMessageProvider {
   public boolean send() {
     try {
       this.controlMessageChannel.put(ControlMessage.getStartBatchCommand(batchId, numberOfPriceData));
-      return true;
+      return Boolean.TRUE;
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    return false;
+    return Boolean.FALSE;
   }
 }

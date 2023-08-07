@@ -18,15 +18,16 @@ import lombok.Setter;
 class PriceDataMessageConsumer implements ReceiveMessageProvider {
   @NonNull
   final private int batchId;
-  @NonNull
-  private boolean isStopped;
+  private volatile boolean isCanceled;
+  private volatile boolean isCompleted;
   @NonNull
   final private AbstractMap<Integer, BlockingQueue<PriceDataMessage>> priceDataMessageChannel;
   final private Map<String, Integer> instrumentLastPrice = new ConcurrentHashMap<>();
   @Override
   public <T> T receive(Class<T> type) {
     try {
-      while (!isStopped) {
+      // Consumer will stop reading data once CANCEL or COMPLETE message is send.
+      while (!isCanceled && !isCompleted) {
         PriceDataMessage priceDataMessage = priceDataMessageChannel.get(batchId).poll();
         if (priceDataMessage != null) {
           priceDataMessage.getPriceDataList().stream().forEach(priceData -> {
@@ -35,11 +36,15 @@ class PriceDataMessageConsumer implements ReceiveMessageProvider {
           System.out.println("Received Message: "+ priceDataMessage);
           Thread.sleep(1000);
         }
+
+        if(isCanceled) {
+          instrumentLastPrice.clear();
+        }
       }
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    return type.cast(Collections.EMPTY_LIST);
+    return type.cast(instrumentLastPrice);
   }
 }

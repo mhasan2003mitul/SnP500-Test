@@ -20,6 +20,7 @@ public class SnP500APP {
     priceData1[8] = new PriceData("I", System.currentTimeMillis() + 1, random.nextInt(100));
     priceData1[9] = new PriceData("J", System.currentTimeMillis() + 1, random.nextInt(100));
 
+    // Get price data for DEGIRO from NYSE
     PriceService priceService = new PriceService();
     priceService.startPriceService("SnP");
     priceService.registerPriceServiceProducer("NYSE");
@@ -27,6 +28,7 @@ public class SnP500APP {
     priceService.producePriceData("NYSE", 1, 2, Arrays.asList(priceData1));
     priceService.consumePriceData("DEGIRO");
 
+    // Get price data for ETORO from AMS
     final PriceData[] priceData2 = new PriceData[10];
     priceData2[0] = new PriceData("Z", System.currentTimeMillis(), random.nextInt(100));
     priceData2[1] = new PriceData("Y", System.currentTimeMillis() + 1, random.nextInt(100));
@@ -44,6 +46,11 @@ public class SnP500APP {
     priceService.producePriceData("AMS", 1, 3, Arrays.asList(priceData2));
     priceService.consumePriceData("ETORO");
 
+//    priceService.registerPriceServiceProducer("ETORO");
+//    priceService.registerPriceServiceConsumer("ETORO", "AMS");
+//    priceService.requestPriceData();
+
+    // Get price data for InterActiveBroker from CMX
     final PriceData[] priceData3 = new PriceData[10];
     priceData3[0] = new PriceData("A", System.currentTimeMillis(), random.nextInt(100));
     priceData3[1] = new PriceData("Z", System.currentTimeMillis() + 1, random.nextInt(100));
@@ -57,11 +64,16 @@ public class SnP500APP {
     priceData3[9] = new PriceData("V", System.currentTimeMillis() + 1, random.nextInt(100));
 
     priceService.registerPriceServiceProducer("CMX");
-    priceService.registerPriceServiceConsumer("CMX", "RABO");
+    priceService.registerPriceServiceConsumer("CMX", "InterActiveBroker");
     priceService.producePriceData("CMX", 1, 4, Arrays.asList(priceData3));
-    priceService.consumePriceData("RABO");
+    priceService.consumePriceData("InterActiveBroker");
 
+    // Cancel
     priceService.stopProducingPriceData("NYSE", 1);
+
+//    System.out.println(String.format("Price List for %s from %s: %s ", "DEGIRO", priceService.getLastPriceData("DEGIRO")));
+//    System.out.println(String.format("Price List for %s from %s: %s ", "ETORO", priceService.getLastPriceData("ETORO")));
+//    System.out.println(String.format("Price List for %s from %s: %s ", "InterActiveBroker", priceService.getLastPriceData("InterActiveBroker")));
 
     Runtime.getRuntime().addShutdownHook(new Thread(()-> {
       priceService.shutdown();

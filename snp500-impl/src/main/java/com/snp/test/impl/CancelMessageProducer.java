@@ -14,10 +14,10 @@ class CancelMessageProducer implements SendMessageProvider {
   public boolean send() {
     try {
       this.controlMessageChannel.put(ControlMessage.getCancelBatchCommand(batchId));
-      return true;
+      return Boolean.TRUE;
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    return false;
+    return Boolean.FALSE;
   }
 }

@@ -9,15 +9,21 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@AllArgsConstructor(staticName = "of")
+@RequiredArgsConstructor(staticName = "of")
+@Setter
+@Getter
 class PriceDataMessageProducer implements SendMessageProvider {
 
   @NonNull
   private int batchId;
   @NonNull
   private int chunkSize;
+  private volatile boolean isStopped = Boolean.FALSE;
   @NonNull
   private List<PriceData> priceDataList;
   @NonNull
@@ -29,7 +35,7 @@ class PriceDataMessageProducer implements SendMessageProvider {
     PriceDataMessage batchMessage;
     try {
       if(priceDataList.size() > chunkSize) {
-        for(int i=0; i < priceDataList.size(); i = i+chunkSize) {
+        for(int i=0; i < priceDataList.size() && !isStopped; i = i+chunkSize) {
           List<PriceData> priceData;
           if(i + chunkSize < priceDataList.size()) {
              priceData = priceDataList.subList(i, i + chunkSize);
@@ -46,9 +52,10 @@ class PriceDataMessageProducer implements SendMessageProvider {
         priceDataMessageChannel.get(batchId).put(batchMessage);
         Thread.sleep(1000);
       }
+      return Boolean.TRUE;
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    return false;
+    return Boolean.FALSE;
   }
 }
