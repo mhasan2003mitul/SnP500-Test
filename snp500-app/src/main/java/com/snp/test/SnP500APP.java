@@ -80,6 +80,11 @@ public class SnP500APP {
     priceService.producePriceDataForAConsumer("CMX", "InterActiveBroker",1, 4, Arrays.asList(priceData3));
     priceService.consumePriceDataFromAProducer("InterActiveBroker", "CMX");
 
+    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("DEGIRO", "NYSE"));
+    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("ETORO", "NYSE"));
+    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("ETORO", "AMS"));
+    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "AMS"));
+    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "CMX"));
 
     Runtime.getRuntime().addShutdownHook(new Thread(()-> {
       priceService.shutdown();

@@ -41,7 +41,7 @@ class PriceDataMessageConsumerTest {
       try {
         Thread.sleep(10000);
         latch.countDown();
-        priceDataMessageConsumer.setCompleted(Boolean.TRUE);
+        priceDataMessageConsumer.setDataSendingCompleted(Boolean.TRUE);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

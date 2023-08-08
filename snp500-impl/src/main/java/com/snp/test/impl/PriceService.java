@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -104,7 +105,7 @@ public class PriceService implements IPriceService {
               priceDataConsumer.receive(Map.class);
 
               // Print Price Data if it receives successfully
-              if(priceDataConsumer.isCanceled()) {
+              if(priceDataConsumer.isDataSendingCanceled()) {
                 System.out.printf("Price data batch %s has been canceled for %s from %s.%n", controlMessage.getBatchId(), consumerName, producerName);
               } else {
                 System.out.printf("Price data list for %s from %s: %s %n", consumerName, producerName,  priceDataConsumerMap.get(consumerName).get(producerName).getInstrumentLastPrice().toString());
@@ -114,14 +115,14 @@ public class PriceService implements IPriceService {
           case CANCEL_BATCH_COMMAND:
             // Notify producer has canceled a price data batch.
             executorService.submit(()->{
-              priceDataConsumerMap.get(consumerName).get(producerName).setCanceled(Boolean.TRUE);
+              priceDataConsumerMap.get(consumerName).get(producerName).setDataSendingCanceled(Boolean.TRUE);
             });
             break;
           case COMPLETE_BATCH_COMMAND:
             // Notify producer has completed a price data batch.
             executorService.submit(()->{
               System.out.println(String.format("Notify %s --> %s has finished sending price data.", consumerName, producerName));
-              priceDataConsumerMap.get(consumerName).get(producerName).setCompleted(Boolean.TRUE);
+              priceDataConsumerMap.get(consumerName).get(producerName).setDataSendingCompleted(Boolean.TRUE);
             });
             break;
           default:
@@ -148,8 +149,43 @@ public class PriceService implements IPriceService {
     });
   }
 
-  public Map<String, Integer> getLastPriceData(String consumerName, String producerName) {
-    return priceDataConsumerMap.get(consumerName).get(producerName).getInstrumentLastPrice();
+  @Override
+  public Map<String, Integer> getLastPriceDataFromAConsumer(String consumerName, String producerName) {
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
+    final Map<String, Integer> lastPriceData = new ConcurrentHashMap<>();
+    try {
+      executorService.submit(()->{
+        PriceDataMessageConsumer priceDataMessageConsumer = null;
+        while(true) {
+          try {
+            if(priceDataMessageConsumer == null || !priceDataConsumerMap.containsKey(consumerName)
+                || !priceDataConsumerMap.get(consumerName).containsKey(producerName)) {
+              priceDataMessageConsumer = priceDataConsumerMap.get(consumerName).get(producerName);
+              continue;
+            }
+
+            if(priceDataMessageConsumer.isDataSendingCanceled()) {
+              countDownLatch.countDown();
+              return;
+            }
+            if(priceDataMessageConsumer.isDataReadingCompleted()) {
+              countDownLatch.countDown();
+              lastPriceData.putAll(priceDataMessageConsumer.getInstrumentLastPrice());
+              return;
+            }
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          } catch (Exception ex) {
+            ex.printStackTrace();
+          }
+        }
+      });
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return lastPriceData;
   }
 
   @Override
