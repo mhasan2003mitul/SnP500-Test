@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Data model of price data message.
+ */
 @AllArgsConstructor
 @ToString
 @Getter

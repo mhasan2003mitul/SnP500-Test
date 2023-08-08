@@ -80,11 +80,15 @@ public class SnP500APP {
     priceService.producePriceDataForAConsumer("CMX", "InterActiveBroker",1, 4, Arrays.asList(priceData3));
     priceService.consumePriceDataFromAProducer("InterActiveBroker", "CMX");
 
+    // Print last price data of previous call
+    System.out.println("Last Price from NYSE for DEGIRO: "+priceService.getLastPriceDataFromAConsumer("DEGIRO", "NYSE"));
+    System.out.println("Last Price from NYSE for ETORO: "+priceService.getLastPriceDataFromAConsumer("ETORO", "NYSE"));
+    System.out.println("Last Price from AMS for ETORO: "+priceService.getLastPriceDataFromAConsumer("ETORO", "AMS"));
+    System.out.println("Last Price from AMS for InterActiveBroker: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "AMS"));
+    System.out.println("Last Price from CMX for InterActiveBroker: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "CMX"));
+
+    priceService.requestInstrumentPriceData("DEGIRO", "NYSE", 2,"A");
     System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("DEGIRO", "NYSE"));
-    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("ETORO", "NYSE"));
-    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("ETORO", "AMS"));
-    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "AMS"));
-    System.out.println("Last Price: "+priceService.getLastPriceDataFromAConsumer("InterActiveBroker", "CMX"));
 
     Runtime.getRuntime().addShutdownHook(new Thread(()-> {
       priceService.shutdown();

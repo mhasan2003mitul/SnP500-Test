@@ -1,5 +1,7 @@
 package com.snp.test.impl;
 
+import com.snp.test.api.ConsumerResetHandler;
+import com.snp.test.api.PriceDataHandler;
 import com.snp.test.api.PriceDataMessage;
 import com.snp.test.api.ReceiveMessageProvider;
 import java.util.AbstractMap;
@@ -12,14 +14,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @RequiredArgsConstructor(staticName = "of")
-@Setter
-@Getter
-class PriceDataMessageConsumer implements ReceiveMessageProvider {
+class PriceDataMessageConsumer implements ReceiveMessageProvider, PriceDataHandler,
+    ConsumerResetHandler {
   @NonNull
   final private int batchId;
-  private volatile boolean isDataSendingCanceled;
-  private volatile boolean isDataReadingCompleted;
-  private volatile boolean isDataSendingCompleted;
+  @Getter
+  @Setter
+  private volatile boolean isDataSendingCanceled = false;
+  @Getter
+  @Setter
+  private volatile boolean isDataSendingCompleted = false;
   @NonNull
   final private AbstractMap<Integer, BlockingQueue<PriceDataMessage>> priceDataMessageChannel;
   final private Map<String, Integer> instrumentLastPrice = new ConcurrentHashMap<>();
@@ -28,7 +32,7 @@ class PriceDataMessageConsumer implements ReceiveMessageProvider {
   public <T> T receive(Class<T> type) {
     try {
       // Consumer will stop reading data once CANCEL or COMPLETE message is send.
-      while (!isDataSendingCanceled && (!isDataSendingCompleted || isAllPriceDataMessageConsumed())) {
+      while (!isDataSendingCanceled && (!isDataSendingCompleted || !isAllPriceDataMessageConsumed())) {
         PriceDataMessage priceDataMessage = priceDataMessageChannel.get(batchId).poll();
         if (priceDataMessage != null) {
           priceDataMessage.getPriceDataList().stream().forEach(priceData -> {
@@ -38,12 +42,6 @@ class PriceDataMessageConsumer implements ReceiveMessageProvider {
           Thread.sleep(2000);
         }
       }
-      if(isDataSendingCanceled) {
-        instrumentLastPrice.clear();
-      }
-      if(isDataSendingCompleted) {
-        isDataReadingCompleted = Boolean.TRUE;
-      }
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -51,6 +49,22 @@ class PriceDataMessageConsumer implements ReceiveMessageProvider {
   }
 
   private boolean isAllPriceDataMessageConsumed() {
-    return priceDataMessageChannel.get(batchId).size() > 0;
+    return priceDataMessageChannel.get(batchId).size() > 0 ? Boolean.FALSE : Boolean.TRUE;
+  }
+
+  @Override
+  public Map<String, Integer> getLastPriceData() {
+    while(true) {
+      if(isDataSendingCompleted && isAllPriceDataMessageConsumed()) {
+        return Map.copyOf(instrumentLastPrice);
+      }
+    }
+  }
+
+  @Override
+  public void reset() {
+    isDataSendingCompleted = false;
+    isDataSendingCanceled = false;
+    instrumentLastPrice.clear();
   }
 }

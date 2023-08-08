@@ -11,6 +11,8 @@ public class TestDataUtil {
   static final int NUMBER_OF_PRICE_DATA = 10;
   static final int CHUNK_SIZE = 3;
 
+  static final String INSTRUMENT_ID = "A";
+
   public static List<PriceData> getPriceData() {
     PriceData[] priceData = new PriceData[10];
     priceData[0] = new PriceData("A", System.currentTimeMillis(), ThreadLocalRandom.current().nextInt(100));

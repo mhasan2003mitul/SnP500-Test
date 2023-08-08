@@ -1,5 +1,9 @@
 package com.snp.test.api;
 
+/**
+ * Define contract for consumer to consume data from shared QUEUE.
+ */
 public interface ReceiveMessageProvider {
-  public <T> T receive(Class<T> type);
+
+  <T> T receive(Class<T> type);
 }

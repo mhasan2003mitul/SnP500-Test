@@ -34,7 +34,7 @@ class PriceDataMessageProducer implements SendMessageProvider {
     priceDataMessageChannel.putIfAbsent(batchId, new LinkedBlockingQueue<>());
     PriceDataMessage batchMessage;
     try {
-      if(priceDataList.size() > chunkSize) {
+      if(priceDataList.size() >= chunkSize) {
         for(int i=0; i < priceDataList.size() && !isStopped; i = i+chunkSize) {
           List<PriceData> priceData;
           if(i + chunkSize < priceDataList.size()) {
